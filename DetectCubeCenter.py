@@ -53,15 +53,9 @@ def computeCenter(M):
     else:
         x = int(m10/m00)
         y = int(m01/m00)
-        #print(x)
-        #print(y)
+     
         return(x,y)
     
-        
-        '''x = 0
-        y = 0
-        return (x, y)'''
-        
 X = 0
 Y = 0
 def post(event, x, y, flags, param):
@@ -87,11 +81,11 @@ for frame in cam.capture_continuous(rawcap, format="bgr", use_video_port=True):
     
     
  
-# Here we are deresfining range of bluecolor in HSV
-# This creates a mask of blue coloured 
+# Here we are defining range of blue, red, and yellow color in HSV
+# This creates a mask of blue, red, and yellow coloured 
 # objects found in the frame.
     mask = cv2.inRange(hsv, lower_red, upper_red)
-    #cv2.rectangle(mask, (200, 200), (300, 30), (255,0,0), 2)
+
     res = cv2.bitwise_and(imge,imge, mask= mask)
     im2, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     blob = max(contours, key=lambda el: cv2.contourArea(el), default=0)
@@ -102,7 +96,7 @@ for frame in cam.capture_continuous(rawcap, format="bgr", use_video_port=True):
     else:
         pass
     
-    #center = (int(M["m10"] / x)), int(M["m01"] / x)
+
     center = computeCenter(M)
     
     cv2.circle(canvas, center, 2 ,(255,0,0), -1)
@@ -115,7 +109,7 @@ for frame in cam.capture_continuous(rawcap, format="bgr", use_video_port=True):
     
      
 # The bitwise and of the frame and mask is done so 
-# that only the blue coloured objects are highlighted 
+# that only the blue, red, or yellow coloured objects are highlighted 
 # and stored in res
    
     blurred = cv2.GaussianBlur(canvas, (5,5), 0)
@@ -158,8 +152,6 @@ s.putNumber('X', centerX)
 s.putNumber('Y', centerY)
 #detectScaleLights()
 '''------------------------------------Thread-------------------------------------------------------------'''
-
-
 import time
 
 class vision(threading.Thread):
@@ -201,13 +193,7 @@ class kill(threading.Thread):
         print("Waiting")
         time.sleep(3)
             
-        
-
-
-        
- 
        
-
 thread1 = vision("1")
 thread2 = retriever("2")
 thread3 = kill()
