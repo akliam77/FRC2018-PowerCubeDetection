@@ -1,27 +1,80 @@
 #Python program for image processing cubes and the switch during the 2018 FRC
+#Created by Akli Amrous 2018
 
-#Import the necessary dependencies
+#Image Processing
 import cv2
+#Matrix Math
 import numpy as np
+#Raspberry Pi Camera
 from picamera.array import PiRGBArray
 from picamera import PiCamera
+#NetworkTables API
 from networktables import NetworkTables as nt
+#Logging
 import logging
 from time import sleep
 import threading
 
 
-#define the camera, resolution and framerate
+class vision(threading.Thread):
+    def __init__(self, threadID):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.stop_event = threading.Event()
+    def run(self):
+        while(not self.stop_event.isSet()):
+            print("Waiting")
+            self.stop_event.wait(1)
+        return 0
+    def kill(self):
+        self.stop_event.set()
 
+class retriever(threading.Thread):
+    def __init__(self, threadID):
+        threading.Thread.__init__(self)
+        self.stop_event = threading.Event()
+        self.threadID = threadID
+    def run(self):
+        while(not self.stop_event.isSet()):
+            print("Waiting")
+            self.stop_event.wait(1)
+    
+        print("Exiting")
+    def kill(self):
+        self.stop_event.set()
+class kill(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        
+        
+    def run(self):
+        
+        print("Waiting")
+        time.sleep(3)
+            
+       
+thread1 = vision("1")
+thread2 = retriever("2")
+thread3 = kill()
+
+
+thread1.start()
+thread2.start()
+thread3.start()
+
+thread3.join()
+thread1.kill()
+thread2.kill()
+print("Dead")
+
+
+#define the camera, resolution and framerate
 cam = PiCamera()
 cam.resolution = (400, 400)
 cam.framerate = 15
 rawcap = PiRGBArray(cam, size=(400,400))
-
 sleep(0.1)
 
-
- 
 # Define the ip address of the Robot and initialize the server.
 #Get the three SmartDashboard tables
 cap = cv2.VideoCapture(0)
@@ -31,8 +84,6 @@ sc = nt.getTable("Scale")
 s = nt.getTable("Switch")
 centerX = 320
 centerY = 225
-
-
 
 nt.initialize(server=ip)
 
@@ -131,9 +182,6 @@ for frame in cam.capture_continuous(rawcap, format="bgr", use_video_port=True):
         
     rawcap.truncate(0)
     
-    
-
- 
 # This displays the frame, mask 
 # and res which we created in 3 separate windows.
     k = cv2.waitKey(33)
@@ -151,68 +199,4 @@ sc.putNumber('Y', centerY)
 s.putNumber('X', centerX)
 s.putNumber('Y', centerY)
 #detectScaleLights()
-'''------------------------------------Thread-------------------------------------------------------------'''
-import time
-
-class vision(threading.Thread):
-    def __init__(self, threadID):
-        threading.Thread.__init__(self)
-        self.threadID = threadID
-        self.stop_event = threading.Event()
-    def run(self):
-        while(not self.stop_event.isSet()):
-            print("Waiting")
-            self.stop_event.wait(1)
-        return 0
-    def kill(self):
-        self.stop_event.set()
-
-class retriever(threading.Thread):
-    def __init__(self, threadID):
-        threading.Thread.__init__(self)
-        self.stop_event = threading.Event()
-        self.threadID = threadID
-    def run(self):
-        while(not self.stop_event.isSet()):
-            print("Waiting")
-            self.stop_event.wait(1)
-    
-        print("Exiting")
-    def kill(self):
-        self.stop_event.set()
-        
-
-
-class kill(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        
-        
-    def run(self):
-        
-        print("Waiting")
-        time.sleep(3)
-            
-       
-thread1 = vision("1")
-thread2 = retriever("2")
-thread3 = kill()
-
-
-thread1.start()
-thread2.start()
-thread3.start()
-
-thread3.join()
-thread1.kill()
-thread2.kill()
-
-
-
-print("Dead")
-
-
-
-        
-    
 
