@@ -13,3 +13,13 @@ class DataTransfer(object):
 
     def connectionListener(self, connected, info):
         print(info, '; connected=%s' % connected)
+
+    def sendScaleData(self, centerX, centerY ):
+        self.sc.putNumber("X", centerX)
+        self.sc.putNumber("Y", centerY)
+    
+    def sendSwitchData(self, centerX, centerY):
+        self.s.putNumber("X", centerX)
+        self.s.putNumber("Y", centerY)
+
+        
