@@ -1,125 +1,39 @@
-#Python program for image processing cubes and the switch during the 2018 FRC
-#Created by Akli Amrous 2018
+"""
+File Name: DetectCubeCenter.py
 
-#Image Processing
+Author: Akli Amrous
+
+Description: This program calculates the center of a cube object
+and sends it back to the Roborio via NetworkTables. This was created
+for the 2018 FIRST Robotics Competition. It was scraped due to my
+incompentency as a programmer at the time.
+
+Copyright (c) Akli Amrous 2018
+
+"""
 import cv2
-#Matrix Math
 import numpy as np
-#Raspberry Pi Camera
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-#NetworkTables API
 from networktables import NetworkTables as nt
-#Logging
 import logging
-from time import sleep
-import threading
+import time
+from camera import Camera 
+from datatransfer import DataTransfer
 
 
-class vision(threading.Thread):
-    def __init__(self, threadID):
-        threading.Thread.__init__(self)
-        self.threadID = threadID
-        self.stop_event = threading.Event()
-    def run(self):
-        while(not self.stop_event.isSet()):
-            print("Waiting")
-            self.stop_event.wait(1)
-        return 0
-    def kill(self):
-        self.stop_event.set()
-
-class retriever(threading.Thread):
-    def __init__(self, threadID):
-        threading.Thread.__init__(self)
-        self.stop_event = threading.Event()
-        self.threadID = threadID
-    def run(self):
-        while(not self.stop_event.isSet()):
-            print("Waiting")
-            self.stop_event.wait(1)
-    
-        print("Exiting")
-    def kill(self):
-        self.stop_event.set()
-class kill(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        
-        
-    def run(self):
-        
-        print("Waiting")
-        time.sleep(3)
-            
-       
-thread1 = vision("1")
-thread2 = retriever("2")
-thread3 = kill()
-
-
-thread1.start()
-thread2.start()
-thread3.start()
-
-thread3.join()
-thread1.kill()
-thread2.kill()
-print("Dead")
-
-
-#define the camera, resolution and framerate
-cam = PiCamera()
-cam.resolution = (400, 400)
-cam.framerate = 15
-rawcap = PiRGBArray(cam, size=(400,400))
-sleep(0.1)
-
-# Define the ip address of the Robot and initialize the server.
-#Get the three SmartDashboard tables
 cap = cv2.VideoCapture(0)
-ip = "10.46.82.2"
-sd = nt.getTable("SmartDashboard")
-sc = nt.getTable("Scale")
-s = nt.getTable("Switch")
+cam = Camera()
+scale = DataTransfer()
+sc = scale.sc
+s = scale.s
 centerX = 320
 centerY = 225
-
-nt.initialize(server=ip)
-
-def valueChanged(table, key, value, isNew):
-     print("valueChanged: key: '%s'; value: %s; isNew: %s" % (key,value, isNew))
-
-def connectionListener(connected, info):
-     print(info, '; connected=%s' % connected)
+nt.initialize(server=sc.ip)
  
-def computeCenter(M):
-    m00 = int(M["m00"])
-    m10 = int(M["m10"])
-    m01 = int(M["m01"])
-    
-    if m00 == 0:
-        print("Detected bad data from opencv")
-        return (-1, -1)
-    else:
-        x = int(m10/m00)
-        y = int(m01/m00)
-     
-        return(x,y)
-    
-X = 0
-Y = 0
-def post(event, x, y, flags, param):
-    if event == cv2.EVENT_MOUSEMOVE:
-        
-        print(x)
-        print(y)
-        X = x
-        Y = y
-     
 # This drives the program into an infinite loop.
 
-for frame in cam.capture_continuous(rawcap, format="bgr", use_video_port=True):       
+for frame in cam.capture_continuous(cam.rawcap, format="bgr", use_video_port=True):       
     # Captures the live stream frame-by-frame
     imge = frame.array
     
@@ -148,7 +62,7 @@ for frame in cam.capture_continuous(rawcap, format="bgr", use_video_port=True):
         pass
     
 
-    center = computeCenter(M)
+    center = cam.computeCenter(M)
     
     cv2.circle(canvas, center, 2 ,(255,0,0), -1)
     x, y = center
@@ -178,9 +92,9 @@ for frame in cam.capture_continuous(rawcap, format="bgr", use_video_port=True):
     cv2.imshow('frame',imge)
     cv2.imshow('mask',mask)
     cv2.imshow('can',canvas)
-    cv2.setMouseCallback('Gray', post)
+    cv2.setMouseCallback('Gray', cam.post)
         
-    rawcap.truncate(0)
+    cam.rawcap.truncate(0)
     
 # This displays the frame, mask 
 # and res which we created in 3 separate windows.
