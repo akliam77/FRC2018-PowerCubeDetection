@@ -5,9 +5,7 @@ Author: Akli Amrous
 
 Description: This program calculates the center of a cube object
 and sends it back to the Roborio via NetworkTables. This was created
-for the 2018 FIRST Robotics Competition. It was scraped due to mys
-incompentency as a programmer at the time.
-
+for the 2018 FIRST Robotics Competition. 
 Copyright (c) Akli Amrous 2018
 
 """
